@@ -67,3 +67,26 @@ html, body {
   white-space: nowrap;
   letter-spacing: 0.08em;
 }
+
+/* ── Attribution badge ───────────────────────────────────────── */
+
+#geochron-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(5, 10, 20, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.60rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  z-index: 1;
+  transition: color 0.2s;
+}
+
+#geochron-badge:hover {
+  color: rgba(255, 255, 255, 0.65);
+}

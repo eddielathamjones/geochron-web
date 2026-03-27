@@ -4,15 +4,56 @@ const RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;
 const MIN_DECL = 2 * RAD;
 
+// ── URL parameter config ────────────────────────────────────────────────────
+//
+// All visual properties are configurable via URL query params so this page
+// works as a hosted iframe embed with per-customer settings.
+//
+// Supported params:
+//   center=lng,lat      Initial map center          (default: 0,20)
+//   zoom=N              Initial zoom level           (default: 1.8)
+//   minzoom=N           Min zoom                     (default: 1)
+//   maxzoom=N           Max zoom                     (default: 10)
+//   style=URL           MapLibre style URL           (default: openfreemap liberty)
+//   interval=N          Layer update interval (sec)  (default: 60)
+//   clock=false         Hide the UTC clock overlay   (default: true)
+//   subsolar=false      Hide the subsolar info bar   (default: true)
+//   attribution=false   Hide the geochron badge      (default: true)
+
+function getParams() {
+  const p = new URLSearchParams(window.location.search);
+
+  const centerRaw = p.get('center');
+  let center = [0, 20];
+  if (centerRaw) {
+    const parts = centerRaw.split(',').map(Number);
+    if (parts.length === 2 && parts.every(isFinite)) center = parts;
+  }
+
+  const zoom    = parseFloat(p.get('zoom'))    || 1.8;
+  const minZoom = parseFloat(p.get('minzoom')) || 1;
+  const maxZoom = parseFloat(p.get('maxzoom')) || 10;
+  const style   = p.get('style') || 'https://tiles.openfreemap.org/styles/liberty';
+  const interval = Math.max(10, parseInt(p.get('interval'), 10) || 60) * 1000;
+
+  const showClock       = p.get('clock')       !== 'false';
+  const showSubsolar    = p.get('subsolar')     !== 'false';
+  const showAttribution = p.get('attribution')  !== 'false';
+
+  return { center, zoom, minZoom, maxZoom, style, interval, showClock, showSubsolar, showAttribution };
+}
+
+const CFG = getParams();
+
 // ── Map init ───────────────────────────────────────────────────────────────────
 
 const map = new maplibregl.Map({
   container: 'map',
-  style: 'https://tiles.openfreemap.org/styles/liberty',
-  center: [0, 20],
-  zoom: 1.8,
-  minZoom: 1,
-  maxZoom: 10,
+  style:     CFG.style,
+  center:    CFG.center,
+  zoom:      CFG.zoom,
+  minZoom:   CFG.minZoom,
+  maxZoom:   CFG.maxZoom,
   attributionControl: { compact: true },
 });
 
@@ -211,7 +252,26 @@ function updateSubsolarInfo(lat, lon) {
     `subsolar  ${latStr}\u00B0${ns}  ${lonStr}\u00B0${ew}`;
 }
 
+// ── Overlay visibility ─────────────────────────────────────────────────────────
+
+function applyOverlayVisibility() {
+  if (!CFG.showClock) {
+    const el = document.getElementById('clock');
+    if (el) el.style.display = 'none';
+  }
+  if (!CFG.showSubsolar) {
+    const el = document.getElementById('subsolar-info');
+    if (el) el.style.display = 'none';
+  }
+  if (!CFG.showAttribution) {
+    const el = document.getElementById('geochron-badge');
+    if (el) el.style.display = 'none';
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
+
+applyOverlayVisibility();
 
 map.on('load', () => {
   addLayers();
@@ -219,5 +279,5 @@ map.on('load', () => {
   updateClock();
   setInterval(updateClock, 1000);
 
-  setInterval(updateLayers, 60_000);
+  setInterval(updateLayers, CFG.interval);
 });
