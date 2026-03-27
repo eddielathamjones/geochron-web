@@ -1,0 +1,25 @@
+/* ── Embed-specific overrides ─────────────────────────────────── */
+
+/* Attribution badge — appears bottom-right, free tier only */
+#geochron-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(5, 10, 20, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.60rem;
+  letter-spacing: 0.12em;
+  color: rgba(200, 210, 230, 0.50);
+  text-decoration: none;
+  pointer-events: auto;
+  transition: color 0.15s, border-color 0.15s;
+  z-index: 10;
+}
+
+#geochron-badge:hover {
+  color: #dde4f0;
+  border-color: rgba(255, 255, 255, 0.25);
+}
