@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoChron — Live Day/Night Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/embed.css" />
+  <style>
+    /* Embed defaults: all overlay controls hidden unless enabled via URL params */
+    #vibe-picker   { display: none; }
+    #clock         { display: none; }
+    #subsolar-info { display: none; }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+  <div id="vibe-picker"></div>
+  <div id="clock">
+    <div id="utc-time"></div>
+    <div id="utc-label">UTC</div>
+  </div>
+  <div id="subsolar-info"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+  <script src="js/embed.js"></script>
+</body>
+</html>

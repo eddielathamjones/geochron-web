@@ -1,31 +1,44 @@
 {
   "name": "@eddielathamjones/geochron-web",
   "version": "1.1.0",
-  "description": "Live day/night terminator map — shows what time it is everywhere on Earth. Zero dependencies, pure client-side solar math.",
-  "main": "src/frontend/js/app.js",
-  "files": [
-    "src/frontend/"
-  ],
+  "description": "Live day/night terminator map — embeddable iframe with URL-param config (center, zoom, style, interval, controls). Real-time solar geometry, no API keys.",
   "keywords": [
+    "geochron",
+    "solar",
     "day-night",
     "terminator",
-    "solar",
-    "suncalc",
     "maplibre",
-    "globe",
+    "suncalc",
     "gis",
-    "geochron",
     "embed",
-    "iframe"
+    "iframe",
+    "map"
   ],
   "author": "Eddie Latham-Jones",
   "license": "MIT",
-  "homepage": "https://github.com/eddielathamjones/geochron-web",
+  "homepage": "https://github.com/eddielathamjones/geochron-web#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/eddielathamjones/geochron-web.git"
   },
   "bugs": {
     "url": "https://github.com/eddielathamjones/geochron-web/issues"
+  },
+  "main": "src/frontend/js/embed.js",
+  "files": [
+    "src/frontend/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "cd src && python -m backend.app",
+    "dev": "PORT=5002 python -m src.backend.app"
+  },
+  "peerDependencies": {
+    "maplibre-gl": ">=4.0.0",
+    "suncalc": ">=1.9.0"
+  },
+  "engines": {
+    "node": ">=16"
   }
 }

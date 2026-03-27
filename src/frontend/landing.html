@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoChron — Embeddable Live Day/Night Map</title>
+  <meta name="description" content="A lightweight day/night terminator map you can embed in any page. Self-host free or use the hosted version for $5/mo." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #050a14;
+      --surface:   #0d1526;
+      --border:    rgba(255,255,255,0.10);
+      --text:      #dde4f0;
+      --muted:     #667;
+      --accent:    #ffd700;
+      --mono:      'Courier New', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 64px 24px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      letter-spacing: 0.08em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    header h1 span { color: var(--accent); }
+    header p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 540px;
+      margin: 0 auto 32px;
+      letter-spacing: 0.04em;
+    }
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-size: 0.70rem;
+      letter-spacing: 0.10em;
+      color: rgba(200,210,230,0.55);
+    }
+
+    /* ── Live preview ── */
+    .preview-section {
+      max-width: 960px;
+      margin: 56px auto;
+      padding: 0 24px;
+    }
+    .preview-section h2 {
+      font-size: 0.75rem;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .map-preview {
+      width: 100%;
+      height: 400px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .map-preview iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ── Embed builder ── */
+    .embed-builder {
+      max-width: 960px;
+      margin: 0 auto 56px;
+      padding: 0 24px;
+    }
+    .embed-builder h2 {
+      font-size: 0.75rem;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .control-item label {
+      display: block;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .control-item input, .control-item select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+    }
+    .control-item input:focus, .control-item select:focus {
+      outline: none;
+      border-color: rgba(255,255,255,0.25);
+    }
+    select option { background: var(--surface); }
+
+    .snippet-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      color: rgba(200,210,230,0.80);
+      white-space: pre;
+      overflow-x: auto;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.60rem;
+      letter-spacing: 0.10em;
+      padding: 4px 10px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .copy-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+
+    /* ── Pricing ── */
+    .pricing {
+      max-width: 760px;
+      margin: 0 auto 64px;
+      padding: 0 24px;
+    }
+    .pricing h2 {
+      font-size: 0.75rem;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .tiers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 560px) { .tiers { grid-template-columns: 1fr; } }
+    .tier {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px 24px;
+    }
+    .tier.highlighted { border-color: rgba(255,215,0,0.30); }
+    .tier-name {
+      font-size: 0.70rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .tier-price {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .tier-price small {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .tier-desc {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+      letter-spacing: 0.04em;
+    }
+    .tier ul {
+      list-style: none;
+      font-size: 0.72rem;
+      color: rgba(200,210,230,0.70);
+      letter-spacing: 0.04em;
+    }
+    .tier ul li { margin-bottom: 6px; padding-left: 16px; position: relative; }
+    .tier ul li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
+    .tier-cta {
+      display: inline-block;
+      margin-top: 20px;
+      background: rgba(255,215,0,0.10);
+      border: 1px solid rgba(255,215,0,0.30);
+      border-radius: 5px;
+      padding: 8px 20px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 0.70rem;
+      letter-spacing: 0.12em;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .tier-cta:hover { background: rgba(255,215,0,0.18); }
+
+    /* ── Self-host ── */
+    .selfhost {
+      max-width: 760px;
+      margin: 0 auto 64px;
+      padding: 0 24px;
+    }
+    .selfhost h2 {
+      font-size: 0.75rem;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .code-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      font-size: 0.72rem;
+      color: rgba(200,210,230,0.80);
+      white-space: pre;
+      overflow-x: auto;
+      margin-bottom: 12px;
+    }
+    .selfhost p {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-top: 12px;
+    }
+    .selfhost a { color: rgba(200,210,230,0.60); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 0.65rem;
+      letter-spacing: 0.10em;
+      color: var(--muted);
+    }
+    footer a { color: rgba(200,210,230,0.40); text-decoration: none; }
+    footer a:hover { color: rgba(200,210,230,0.70); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1><span>geo</span>chron</h1>
+  <p>Lightweight day/night terminator map. Drop it into any page as an iframe. No third-party dependencies, no API keys.</p>
+  <div class="badge-row">
+    <span class="badge">REAL-TIME SOLAR GEOMETRY</span>
+    <span class="badge">IFRAME EMBED</span>
+    <span class="badge">7 MAP STYLES</span>
+    <span class="badge">SELF-HOST OR HOSTED</span>
+  </div>
+</header>
+
+<section class="preview-section">
+  <h2>Live Preview</h2>
+  <div class="map-preview">
+    <iframe
+      src="/embed?style=dark&zoom=1.8&center=0,20&attribution=false"
+      title="Live day/night map — geochron-web"
+      loading="lazy"
+    ></iframe>
+  </div>
+</section>
+
+<section class="embed-builder">
+  <h2>Build Your Embed</h2>
+  <div class="controls-grid">
+    <div class="control-item">
+      <label>Map Style</label>
+      <select id="opt-style">
+        <option value="liberty" selected>Liberty</option>
+        <option value="dark">Dark</option>
+        <option value="toner">Toner</option>
+        <option value="blueprint">Blueprint</option>
+        <option value="vintage">Vintage</option>
+        <option value="watercolor">Watercolor</option>
+        <option value="highcontrast">Hi-Contrast</option>
+      </select>
+    </div>
+    <div class="control-item">
+      <label>Center (lon,lat)</label>
+      <input id="opt-center" type="text" value="0,20" placeholder="0,20" />
+    </div>
+    <div class="control-item">
+      <label>Zoom (1–10)</label>
+      <input id="opt-zoom" type="number" value="1.8" min="1" max="10" step="0.1" />
+    </div>
+    <div class="control-item">
+      <label>Refresh Interval (s)</label>
+      <input id="opt-interval" type="number" value="60" min="10" max="3600" />
+    </div>
+    <div class="control-item">
+      <label>Show UTC Clock</label>
+      <select id="opt-clock">
+        <option value="false" selected>No</option>
+        <option value="true">Yes</option>
+      </select>
+    </div>
+    <div class="control-item">
+      <label>Show Subsolar Info</label>
+      <select id="opt-info">
+        <option value="false" selected>No</option>
+        <option value="true">Yes</option>
+      </select>
+    </div>
+  </div>
+  <div class="snippet-box" id="snippet-output">
+    <button class="copy-btn" id="copy-btn">COPY</button>
+    <span id="snippet-text"></span>
+  </div>
+</section>
+
+<section class="pricing">
+  <h2>Pricing</h2>
+  <div class="tiers">
+    <div class="tier">
+      <div class="tier-name">Self-Host</div>
+      <div class="tier-price">Free</div>
+      <div class="tier-desc">Run it yourself. MIT license.</div>
+      <ul>
+        <li>Full source code on GitHub</li>
+        <li>All 7 map styles included</li>
+        <li>Docker + Render.com ready</li>
+        <li>No attribution required</li>
+        <li>You manage the server</li>
+      </ul>
+      <a class="tier-cta" href="https://github.com/eddielathamjones/geochron-web" target="_blank" rel="noopener">
+        VIEW ON GITHUB
+      </a>
+    </div>
+    <div class="tier highlighted">
+      <div class="tier-name">Hosted</div>
+      <div class="tier-price">$5 <small>/ month</small></div>
+      <div class="tier-desc">Iframe it and forget it. We handle uptime.</div>
+      <ul>
+        <li>Attribution badge removed</li>
+        <li>Custom map style via URL param</li>
+        <li>99.9% uptime SLA</li>
+        <li>No cold starts</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <a class="tier-cta" id="stripe-cta" href="#" target="_blank" rel="noopener">
+        GET STARTED — $5/MO
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="selfhost">
+  <h2>Self-Host in 3 Steps</h2>
+  <div class="code-block">git clone https://github.com/eddielathamjones/geochron-web.git
+cd geochron-web
+pip install -r requirements.txt
+python -m src.backend.app</div>
+  <div class="code-block"># Or with Docker:
+docker build -t geochron-web .
+docker run -p 5002:5002 geochron-web</div>
+  <p>
+    Then embed it: <code>&lt;iframe src="http://your-server/embed?style=dark" width="100%" height="400"&gt;&lt;/iframe&gt;</code>
+  </p>
+  <p style="margin-top:16px;">
+    Full docs and npm package: <a href="https://github.com/eddielathamjones/geochron-web" target="_blank">github.com/eddielathamjones/geochron-web</a>
+  </p>
+</section>
+
+<footer>
+  <p>
+    Built by <a href="https://eddielathamjones.com" target="_blank">Eddie Latham-Jones</a> &nbsp;·&nbsp;
+    <a href="https://github.com/eddielathamjones/geochron-web" target="_blank">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://www.npmjs.com/package/@eddielathamjones/geochron-web" target="_blank">npm</a>
+  </p>
+</footer>
+
+<script>
+  // ── Embed snippet builder ────────────────────────────────────────
+  const HOST = window.location.origin;
+
+  function buildSnippet() {
+    const style    = document.getElementById('opt-style').value;
+    const center   = document.getElementById('opt-center').value.trim() || '0,20';
+    const zoom     = document.getElementById('opt-zoom').value;
+    const interval = document.getElementById('opt-interval').value;
+    const clock    = document.getElementById('opt-clock').value;
+    const info     = document.getElementById('opt-info').value;
+
+    const params = new URLSearchParams({
+      style, center, zoom,
+      interval, clock, info,
+      attribution: 'true',
+    });
+
+    const src = `${HOST}/embed?${params.toString()}`;
+    return (
+      `<iframe\n` +
+      `  src="${src}"\n` +
+      `  width="100%" height="400"\n` +
+      `  frameborder="0"\n` +
+      `  style="border-radius:8px;"\n` +
+      `  title="Live day/night map — geochron-web"\n` +
+      `  loading="lazy"\n` +
+      `></iframe>`
+    );
+  }
+
+  function updateSnippet() {
+    document.getElementById('snippet-text').textContent = buildSnippet();
+  }
+
+  ['opt-style','opt-center','opt-zoom','opt-interval','opt-clock','opt-info'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateSnippet);
+    document.getElementById(id).addEventListener('change', updateSnippet);
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    const text = buildSnippet();
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'COPIED';
+      setTimeout(() => { btn.textContent = 'COPY'; }, 1500);
+    });
+  });
+
+  updateSnippet();
+</script>
+</body>
+</html>
