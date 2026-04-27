@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Pull to server
+    runs-on: self-hosted
+    steps:
+      - name: Pull latest changes
+        run: git -C ${{ vars.DEPLOY_PATH }} pull origin main
+
+      - name: Rebuild image
+        run: |
+          docker build -t geochron-web:local \
+            -f ${{ vars.DEPLOY_PATH }}/src/backend/Dockerfile \
+            ${{ vars.DEPLOY_PATH }}
+
+      - name: Restart container
+        run: docker restart geochron-web
+
+      - name: Confirm
+        run: |
+          echo "Deployed at $(date)"
+          echo "HEAD: $(git -C ${{ vars.DEPLOY_PATH }} rev-parse --short HEAD)"
