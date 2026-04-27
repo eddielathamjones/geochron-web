@@ -51,7 +51,7 @@ function clampDeclination(declRaw) {
  *   A*sin(phi) + B*cos(phi) = s
  * where A = sin(decl), B = cos(decl)*cos(H), s = sin(altThreshold).
  *
- * The (+) root always yields the night-side boundary for thresholds >= -6 deg,
+ * The (-) root always yields the night-side boundary for thresholds >= -6 deg,
  * which have polar-cap topology. Deeper thresholds (< -12 deg) form a band near
  * the anti-solar side and are not handled here (V1 scope: 0 deg and -6 deg only).
  *
@@ -75,7 +75,7 @@ function buildNightPolygon(ssLon, declRaw, altThresholdDeg) {
     if (Math.abs(denom) < 1e-8) {
       t = -(B - s) / (2 * A);
     } else {
-      t = (A + Math.sqrt(disc)) / denom;
+      t = (A - Math.sqrt(disc)) / denom;
     }
 
     let lat = 2 * Math.atan(t) * DEG;
