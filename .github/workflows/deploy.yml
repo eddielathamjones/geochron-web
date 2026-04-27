@@ -18,8 +18,16 @@ jobs:
             -f ${{ vars.DEPLOY_PATH }}/src/backend/Dockerfile \
             ${{ vars.DEPLOY_PATH }}
 
-      - name: Restart container
-        run: docker restart geochron-web
+      - name: Recreate container
+        run: |
+          docker stop geochron-web 2>/dev/null || true
+          docker rm geochron-web 2>/dev/null || true
+          docker run -d \
+            --name geochron-web \
+            -p 5002:5002 \
+            -v /docker/appdata/geochron-web/tile_cache:/cache:rw \
+            --restart unless-stopped \
+            geochron-web:local
 
       - name: Confirm
         run: |
